@@ -42,11 +42,7 @@ export const handleGetCuentas = (req, res) => {
       const balanceValue = parseFloat(value);
       resultados = cuentas.filter(acc => {
         const accBalance = parseBalance(acc.balance);
-        if (operator === 'gt') return accBalance > balanceValue;
-        if (operator === 'lt') return accBalance < balanceValue;
-        if (operator === 'gte') return accBalance >= balanceValue;
-        if (operator === 'lte') return accBalance <= balanceValue;
-        if (operator === 'eq') return accBalance === balanceValue;
+ 
         return false;
       });
     } else {
