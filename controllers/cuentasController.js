@@ -1,7 +1,7 @@
 import { cuentas } from '../data/cuentas.js';
 
 const parseBalance = (balanceStr) => {
-  // Asegura entrada como string, elimina $ y comas, devuelve número (0 si no es válido)
+
   const raw = String(balanceStr || '').replace(/[$,]/g, '');
   const n = parseFloat(raw);
   return Number.isFinite(n) ? n : 0;
@@ -18,7 +18,8 @@ export const handleGetCuentas = (req, res) => {
     });
   }
 
-  const { _id: qId, client: qClient, gender: qGender } = query;
+  const { _id: qId, client: qClient, gender: qGender, isActive, balance: qBalance } = query;
+  console.log('Query recibida:', { qId, qClient, qGender, isActive, qBalance });
   let resultados = [];
 
   if (qId) {
@@ -29,6 +30,30 @@ export const handleGetCuentas = (req, res) => {
   } else if (qGender) {
     const g = qGender.toLowerCase();
     resultados = cuentas.filter(acc => String(acc.gender || '').toLowerCase() === g);
+  } else if (isActive) {
+    const isActiveBool = (isActive === 'true');
+    console.log('Filtrando por isActive:', isActiveBool);
+    resultados = cuentas.filter(c => c.isActive === isActiveBool);
+  } else if (qBalance) {
+    console.log('Filtrando por balance:', qBalance);
+
+    if (qBalance.includes(':')) {
+      const [operator, value] = qBalance.split(':');
+      const balanceValue = parseFloat(value);
+      resultados = cuentas.filter(acc => {
+        const accBalance = parseBalance(acc.balance);
+        if (operator === 'gt') return accBalance > balanceValue;
+        if (operator === 'lt') return accBalance < balanceValue;
+        if (operator === 'gte') return accBalance >= balanceValue;
+        if (operator === 'lte') return accBalance <= balanceValue;
+        if (operator === 'eq') return accBalance === balanceValue;
+        return false;
+      });
+    } else {
+      // Si no hay operador, busca exacto
+      const targetBalance = parseFloat(qBalance);
+      resultados = cuentas.filter(acc => parseBalance(acc.balance) === targetBalance);
+    }
   } else {
     return res.status(400).json({ finded: false, message: 'Consulta no válida' });
   }

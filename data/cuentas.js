@@ -57,4 +57,4 @@ const cuentas = [
   }
 ]
 
-export {cuentas};
+export { cuentas };
